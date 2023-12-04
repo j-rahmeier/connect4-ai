@@ -141,9 +141,8 @@ def uninterupted(blank, board):
       
 
 
-async def gameloop (socket, created):
+async def gameloop (socket, created, board):
   active = True
-  board = [[" " for _ in range(7)] for _ in range(6)]
 
   while active:
     message = (await socket.recv()).split(':')
@@ -163,14 +162,18 @@ async def gameloop (socket, created):
         active = False
 
 async def create_game (server):
+  board = [[" " for _ in range(7)] for _ in range(6)]
   async with websockets.connect(f'ws://{server}/create') as socket:
-    await gameloop(socket, True)
+    await gameloop(socket, True, board)
 
 async def join_game(server, id):
+  board = [[" " for _ in range(7)] for _ in range(6)]
   async with websockets.connect(f'ws://{server}/join/{id}') as socket:
-    await gameloop(socket, False)
+    await gameloop(socket, False, board)
 
 if __name__ == '__main__':
+  board = [[" " for _ in range(7)] for _ in range(6)]
+
   server = input('Server IP: ').strip()
 
 
