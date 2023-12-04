@@ -32,6 +32,7 @@ async def calculate_move(column, board):
   board = update_board(column, "o", board)
   col = make_move(board)
   await asyncio.sleep(3)
+  print(col)
   return col
   
 '''
@@ -146,9 +147,13 @@ async def gameloop (socket, created):
 
   while active:
     message = (await socket.recv()).split(':')
+    print(message)
 
     match message[0]:
-      case 'GAMESTART' | 'OPPONENT':
+      case 'GAMESTART':
+        move = 3
+        await socket.send(f'PLAY:{move}')
+      case'OPPONENT':
         move = calculate_move(message[1], board)
         await socket.send(f'PLAY:{move}')
         
