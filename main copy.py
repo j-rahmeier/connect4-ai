@@ -3,7 +3,8 @@ import websockets
 
 
 #128.113.139.63:5000
-def make_move(board):
+def make_move():
+  global board
   player = ['o', 's']
   print(type(board), 'make move')
   #array of 1's
@@ -35,26 +36,27 @@ def make_move(board):
 
   return None
 
-def calculate_move(column, board):
+def calculate_move(column):
+  global board
   print(type(board), 'calc move')
   print("AAAAAAAAA")
-  board = update_board(column, "o", board)
-  col = make_move(board)
+  update_board(column, "o")
+  col = make_move()
   return col
   
 '''
 Updates the board given the collumn played, the player ('s' or 'o'), 
 and the board array. Returns board with recalculated weights.
 '''
-def update_board(col, player, board):
+def update_board(col, player):
+  global board
   col = int(col)
   for i in range(6):
     if board[i][col] != 's' and board[i][col]!='o':
       board[i][col]=player
       break
 
-  board = recalculate_weight(board)
-  return board
+  recalculate_weight()
 
 '''
 Calculates possible moves and priorities to be used later when deciding
@@ -67,16 +69,18 @@ avoid:
 4: random option - neutral
 5: prob smart not to play
 '''
-def recalculate_weight(board):
-  board = recalculation(board, 1)
-  board = recalculation(board, 2)
-  return board
+def recalculate_weight():
+  global board
+  recalculation(1)
+  recalculation(2)
 
 '''
 d = dir
 check_for - if 1 then s, 2 then o
 '''
-def recalculation(board, check_for):
+def recalculation(check_for):
+  global board
+
   #check rows
   for row in board:
     for col in range(4):
@@ -88,7 +92,7 @@ def recalculation(board, check_for):
             in_row += 1
           else:
             blank = (row, col+1)
-        f_num = int(float_num(blank, board))
+        f_num = int(float_num(blank))
         if in_row == 3 and f_num == 0:
           board[blank[0]][blank[1]] = check_for
         else:
@@ -104,13 +108,13 @@ def recalculation(board, check_for):
             in_row += 1
           else:
             blank = (row, col+1)
-          if in_row == 3 and float_num(blank, board) == 0:
+          if in_row == 3 and float_num(blank) == 0:
             board[blank[0]][blank[1]] = check_for
             
   #check cols
   for col_i in range(7):
     #checks for random
-    if uninterupted((0, col_i), board):
+    if uninterupted((0, col_i)):
       board[0][col_i] = 4
     for row_i in range(5, -1, -1): #starts at row 6, goes up to 0
       in_row = 0
@@ -120,12 +124,13 @@ def recalculation(board, check_for):
             in_row += 1
         if in_row == 3 and board[row_i+3][col_i]==" ":
             board[0][col_i] = check_for
-  return board
  
 '''
 Checks how much it's floating
 '''
-def float_num(blank, board):
+def float_num(blank):
+  global board
+
   blank_count = 0
   b_row = int(blank[0])
   b_col = int(blank[1])
@@ -140,7 +145,8 @@ def float_num(blank, board):
 '''
 checks if possible to either reach bottom or only a piece
 '''
-def uninterupted(blank, board):
+def uninterupted(blank):
+  global board
   b_row = blank[0]
   b_col = blank[1]
 
@@ -151,7 +157,7 @@ def uninterupted(blank, board):
       
 
 
-async def gameloop (socket, created, board):
+async def gameloop (socket, created):
   active = True
   while active:
     
@@ -165,7 +171,7 @@ async def gameloop (socket, created, board):
       case'OPPONENT':
         print(message[1])
         print("AAAAAA")
-        move = calculate_move(message[1], board)
+        move = calculate_move(message[1])
         print(move)
         await socket.send(f'PLAY:{move}')
         
@@ -175,14 +181,12 @@ async def gameloop (socket, created, board):
         active = False
 
 async def create_game (server):
-  board = list([[" " for _ in range(7)] for _ in range(6)])
   async with websockets.connect(f'ws://{server}/create') as socket:
-    await gameloop(socket, True, board)
+    await gameloop(socket, True)
 
 async def join_game(server, id):
-  board = list([[" " for _ in range(7)] for _ in range(6)])
   async with websockets.connect(f'ws://{server}/join/{id}') as socket:
-    await gameloop(socket, False, board)
+    await gameloop(socket, False)
 
 if __name__ == '__main__':
   board = [[" " for _ in range(7)] for _ in range(6)]
