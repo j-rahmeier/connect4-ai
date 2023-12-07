@@ -132,12 +132,18 @@ def recalculation(check_for):
       board[0][col_i] = 4
     for row_i in range(5, -1, -1): #starts at row 6, goes up to 0
       in_row = 0
-      if board[row_i][col_i]!="s" or board[row_i][col_i]!="o":
+      if board[row_i][col_i]!="s" :
         for i in range(1, 3):
           if board[row_i][col_i]==board[row_i - i][col_i]:
             in_row += 1
         if in_row == 3 and board[row_i+3][col_i]==" ":
-            board[0][col_i] = check_for
+            board[row_i+3][col_i] = 2
+    if board[row_i][col_i]!="s" :
+        for i in range(1, 3):
+          if board[row_i][col_i]==board[row_i - i][col_i]:
+            in_row += 1
+        if in_row == 3 and board[row_i+3][col_i]==" ":
+            board[row_i+3][col_i] = 1
   for r in range(6):
     print(board[r])
  

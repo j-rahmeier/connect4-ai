@@ -120,7 +120,6 @@ def recalculation(board, check_for):
             in_row += 1
         if in_row == 3 and board[row_i+3][col_i]==" ":
             board[0][col_i] = check_for
-  return board
  
 '''
 Checks how much it's floating
